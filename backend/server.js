@@ -4,6 +4,7 @@
  * Description: Express.js server with MongoDB connection, middleware setup, and route registration
  */
 
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -103,6 +104,20 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/users', userRoutes);
+
+// ==========================================
+// PRODUCTION STATIC ASSETS
+// ==========================================
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+  app.get('*', (req, res) => {
+    if (req.originalUrl.startsWith('/api/')) {
+      return res.status(404).json({ success: false, message: 'API route not found' });
+    }
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  });
+}
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE

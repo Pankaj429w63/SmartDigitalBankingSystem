@@ -93,6 +93,53 @@ npm start
 ```
 Frontend runs at: **http://localhost:3000**
 
+### 4. Production Build / Fullstack Deployment
+If you want to deploy the backend and serve the React app from the same Node server, build the frontend first:
+```bash
+cd frontend
+npm install
+npm run build
+```
+Then start the backend in production mode:
+```bash
+cd ../backend
+npm install
+# Windows:
+set NODE_ENV=production&& npm start
+# macOS / Linux:
+NODE_ENV=production npm start
+```
+
+### Single-command fullstack deployment
+From `backend` you can also build the frontend and start the server with one command:
+```bash
+npm run fullstack
+```
+
+The backend will serve the `frontend/build` assets and expose the API at `http://localhost:5000/api`.
+
+### Fullstack Startup Script (Windows)
+A single command can launch backend, frontend, and the Streamlit dashboard together:
+```bash
+run-fullstack.bat
+```
+This opens three new terminals:
+- Backend server on `http://localhost:5000`
+- Frontend app on `http://localhost:3000`
+- Streamlit dashboard on `http://localhost:8502`
+
+### Streamlit Dashboard
+You can run the analytics dashboard against the same local MongoDB database:
+```bash
+python -m pip install -r requirements.txt
+streamlit run src/dashboard_rl.py --server.port 8501
+```
+If port `8501` is already occupied, use an alternate port:
+```bash
+streamlit run src/dashboard_rl.py --server.port 8502
+```
+If MongoDB is running on `mongodb://localhost:27017/smartbankdb`, the dashboard will load live data from the same `transactions` collection used by the backend. If the database is empty or unavailable, the dashboard falls back to a simulated dataset.
+
 ---
 
 ## API Endpoints

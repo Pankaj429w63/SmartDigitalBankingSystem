@@ -17,6 +17,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const userRoutes = require('./routes/userRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 // Import error handling middleware
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
@@ -104,6 +105,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // ==========================================
 // PRODUCTION STATIC ASSETS

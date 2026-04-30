@@ -7,6 +7,45 @@ const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001/predict';
+
+const fetchAiTransactionRisk = async ({ amount, balance, frequency }) => {
+  try {
+    const response = await fetch(AI_SERVICE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, balance, frequency })
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI service responded with ${response.status}`);
+    }
+
+    const result = await response.json();
+    const probability = Number(result.probability ?? 0);
+    const prediction = Boolean(result.fraud ?? result.prediction);
+    const label = prediction
+      ? probability >= 0.75 ? 'High' : 'Medium'
+      : probability >= 0.65 ? 'Medium' : 'Low';
+
+    return {
+      fraudPrediction: prediction,
+      aiRiskScore: Number(Number.isNaN(probability) ? 0 : probability.toFixed(4)),
+      aiRiskLabel: label,
+      aiReason: prediction
+        ? `Flagged by AI model (${(probability * 100).toFixed(0)}% probability)`
+        : `AI scored this transaction as ${label} risk`
+    };
+  } catch (error) {
+    return {
+      fraudPrediction: false,
+      aiRiskScore: null,
+      aiRiskLabel: 'Unknown',
+      aiReason: `AI evaluation unavailable: ${error.message}`
+    };
+  }
+};
+
 // ==========================================
 // GET ALL TRANSACTIONS (with pagination & filters)
 // GET /api/transactions
@@ -111,26 +150,31 @@ const getTransaction = async (req, res, next) => {
 // ==========================================
 
 const createTransaction = async (req, res, next) => {
-  // Use mongoose session for atomic operations
   const session = await mongoose.startSession();
-  session.startTransaction();
+  const topologyType = mongoose.connection.client.topology.description?.type || '';
+  const supportsTransactions = typeof topologyType === 'string' && topologyType.toLowerCase().includes('replicaset');
+
+  if (supportsTransactions) {
+    session.startTransaction();
+  }
 
   try {
     const { type, amount, description, category, recipientAccount, recipientName, notes } = req.body;
     const parsedAmount = parseFloat(amount);
 
     // Get current user with latest balance
-    const user = await User.findById(req.user._id).session(session);
+    const userQuery = User.findById(req.user._id);
+    const user = supportsTransactions ? await userQuery.session(session) : await userQuery;
 
     if (!user) {
-      await session.abortTransaction();
+      if (supportsTransactions) await session.abortTransaction();
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     // Validate sufficient balance for debit operations
     const debitTypes = ['debit', 'transfer', 'payment', 'withdrawal'];
     if (debitTypes.includes(type) && user.balance < parsedAmount) {
-      await session.abortTransaction();
+      if (supportsTransactions) await session.abortTransaction();
       return res.status(400).json({
         success: false,
         message: `Insufficient balance. Available: ₹${user.balance.toFixed(2)}`
@@ -145,12 +189,33 @@ const createTransaction = async (req, res, next) => {
       newBalance -= parsedAmount;
     }
 
+    // Run AI-based risk assessment for the transaction
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const frequencyQuery = Transaction.countDocuments({
+      user: user._id,
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+    const transactionFrequency = supportsTransactions
+      ? await frequencyQuery.session(session)
+      : await frequencyQuery;
+
+    const aiRisk = await fetchAiTransactionRisk({
+      amount: parsedAmount,
+      balance: user.balance,
+      frequency: transactionFrequency
+    });
+
     // Update user balance
     user.balance = newBalance;
-    await user.save({ session });
+    if (supportsTransactions) {
+      await user.save({ session });
+    } else {
+      await user.save();
+    }
 
     // Create transaction record
-    const transaction = await Transaction.create([{
+    const transactionData = {
       user: req.user._id,
       type,
       amount: parsedAmount,
@@ -162,22 +227,31 @@ const createTransaction = async (req, res, next) => {
       notes: notes || '',
       transactionDate: new Date(),
       status: 'completed',
-      ipAddress: req.ip
-    }], { session });
+      ipAddress: req.ip,
+      fraudPrediction: aiRisk.fraudPrediction,
+      aiRiskScore: aiRisk.aiRiskScore,
+      aiRiskLabel: aiRisk.aiRiskLabel,
+      aiReason: aiRisk.aiReason
+    };
 
-    // Commit the transaction
-    await session.commitTransaction();
+    const transaction = supportsTransactions
+      ? await Transaction.create([transactionData], { session })
+      : await Transaction.create(transactionData);
+
+    if (supportsTransactions) {
+      await session.commitTransaction();
+    }
 
     res.status(201).json({
       success: true,
       message: 'Transaction completed successfully',
       data: {
-        transaction: transaction[0],
+        transaction: supportsTransactions ? transaction[0] : transaction,
         newBalance
       }
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (supportsTransactions) await session.abortTransaction();
     next(error);
   } finally {
     session.endSession();

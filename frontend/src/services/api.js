@@ -62,4 +62,9 @@ export const userService = {
   updateProfile: (data) => api.put('/users/profile', data),
 };
 
+// ==================== CHATBOT SERVICES ====================
+export const chatbotService = {
+  chat: (message) => api.post('/chatbot/chat', { message }),
+};
+
 export default api;

@@ -12,6 +12,13 @@ const TYPE_CONFIG = {
   payment:    { icon: 'bi-credit-card-fill',       color: '#f093fb', bg: 'rgba(240,147,251,0.12)', sign: '-' },
 };
 
+const RISK_BADGE = {
+  Low: { bg: 'rgba(110,231,183,0.15)', color: '#10b981' },
+  Medium: { bg: 'rgba(251,191,36,0.12)', color: '#d97706' },
+  High: { bg: 'rgba(248,113,113,0.15)', color: '#dc2626' },
+  Unknown: { bg: 'rgba(148,163,184,0.12)', color: '#475569' }
+};
+
 const TransactionCard = ({ transaction }) => {
   const cfg = TYPE_CONFIG[transaction.type] || TYPE_CONFIG.debit;
   const isPositive = ['+'].includes(cfg.sign);
@@ -31,11 +38,16 @@ const TransactionCard = ({ transaction }) => {
         <div style={{ fontWeight: 600, fontSize: '0.92rem', color: '#f0f4ff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {transaction.description}
         </div>
-        <div style={{ fontSize: '0.78rem', color: '#8892b0', marginTop: 2 }}>
+        <div style={{ fontSize: '0.78rem', color: '#8892b0', marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
           <span className={`transaction-badge badge-${transaction.type === 'credit' || transaction.type === 'deposit' ? 'credit' : transaction.type === 'transfer' ? 'transfer' : 'debit'}`}>
             {transaction.type}
           </span>
-          <span className="ms-2">{transaction.category}</span>
+          <span>{transaction.category}</span>
+          {transaction.aiRiskLabel && (
+            <span style={{ background: RISK_BADGE[transaction.aiRiskLabel]?.bg || RISK_BADGE.Unknown.bg, color: RISK_BADGE[transaction.aiRiskLabel]?.color || RISK_BADGE.Unknown.color, borderRadius: 999, padding: '0.18rem 0.6rem', fontSize: '0.72rem', fontWeight: 700, letterSpacing: 0.3 }}>
+              AI Risk: {transaction.aiRiskLabel}
+            </span>
+          )}
         </div>
       </div>
 

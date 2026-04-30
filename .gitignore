@@ -12,6 +12,7 @@ frontend/.env
 build/
 dist/
 frontend/build/
+java-bank-app/target/
 
 # Cache & logs
 .cache/

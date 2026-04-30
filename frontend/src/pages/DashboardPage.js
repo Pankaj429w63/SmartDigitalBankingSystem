@@ -14,6 +14,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import TransactionCard from '../components/transactions/TransactionCard';
 import TransactionModal from '../components/transactions/TransactionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Notifications from '../components/common/Notifications';
 import { transactionService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -138,6 +139,16 @@ const DashboardPage = () => {
           value={`${stats?.savingsRate || 0}%`}
           change={2.4}
         />
+      </div>
+
+      {/* NOTIFICATIONS */}
+      <div className="row g-4 mb-4">
+        <div className="col-lg-6">
+          <Notifications />
+        </div>
+        <div className="col-lg-6">
+          {/* Quick Stats or other content can go here */}
+        </div>
       </div>
 
       {/* BALANCE CARD + QUICK ACTIONS */}

@@ -133,6 +133,10 @@ const TransactionModal = ({ onSuccess, onClose }) => {
               placeholder="Any additional notes..." className="form-control-custom" style={{ resize: 'none' }} />
           </div>
 
+          <div style={{ marginBottom: '1rem', color: '#aab2c0', fontSize: '0.85rem' }}>
+            Transactions are automatically evaluated by the AI risk engine and will surface a risk label once saved.
+          </div>
+
           <div className="d-flex gap-3">
             <button type="button" onClick={onClose} className="btn-outline-custom flex-grow-1">Cancel</button>
             <button type="submit" disabled={loading} className="btn-primary-custom flex-grow-1" style={{ opacity: loading ? 0.7 : 1 }}>

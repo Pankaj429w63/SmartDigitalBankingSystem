@@ -99,6 +99,26 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       trim: true
     }],
+    fraudPrediction: {
+      type: Boolean,
+      default: false
+    },
+    aiRiskScore: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0
+    },
+    aiRiskLabel: {
+      type: String,
+      enum: ['Low', 'Medium', 'High', 'Unknown'],
+      default: 'Unknown'
+    },
+    aiReason: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'AI reason cannot exceed 200 characters']
+    },
 
     // Date of transaction (can differ from createdAt)
     transactionDate: {

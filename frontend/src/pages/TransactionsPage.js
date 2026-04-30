@@ -62,6 +62,9 @@ const TransactionsPage = () => {
   const handleTransactionSuccess = (txnData) => {
     setShowModal(false);
     updateUserData({ ...user, balance: txnData.newBalance });
+    if (txnData.transaction?.aiRiskLabel) {
+      toast.info(`AI Risk label: ${txnData.transaction.aiRiskLabel}`);
+    }
     fetchTransactions();
   };
 

@@ -10,5 +10,8 @@ start "SmartBank Frontend" cmd /k "cd /d "%~dp0frontend" && npm install && npm s
 REM 3) Start Streamlit analytics dashboard
 start "SmartBank Dashboard" cmd /k "cd /d "%~dp0" && python -m pip install -r requirements.txt && python -m streamlit run src/dashboard_rl.py --server.port 8502"
 
+REM 4) Start Python fraud detection API
+start "SmartBank Fraud API" cmd /k "cd /d "%~dp0" && python -m pip install -r requirements.txt && python fraud_api.py"
+
 echo Fullstack startup launched. Close this window if you want to keep the apps running.
 pause

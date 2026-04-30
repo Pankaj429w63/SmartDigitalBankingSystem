@@ -14,6 +14,7 @@ import DashboardPage from './pages/DashboardPage';
 import TransactionsPage from './pages/TransactionsPage';
 import ProfilePage from './pages/ProfilePage';
 import ToolsPage from './pages/ToolsPage';
+import ChatbotPage from './pages/ChatbotPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route wrapper
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/tools" element={<ProtectedRoute><ToolsPage /></ProtectedRoute>} />
+      <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

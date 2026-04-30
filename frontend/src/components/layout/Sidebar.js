@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 const navItems = [
   { path: '/dashboard',     icon: 'bi-grid-1x2-fill',    label: 'Dashboard'     },
   { path: '/transactions',  icon: 'bi-arrow-left-right', label: 'Transactions'  },
+  { path: '/chatbot',       icon: 'bi-robot',            label: 'AI Assistant'  },
   { path: '/tools',         icon: 'bi-tools',            label: 'Tools'         },
   { path: '/profile',       icon: 'bi-person-circle',    label: 'Profile'       },
 ];

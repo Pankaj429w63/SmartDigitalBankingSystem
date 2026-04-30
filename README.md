@@ -57,6 +57,9 @@ SmartDigitalBankingSystem/
     │   └── index.css
     ├── .env
     └── package.json
+├── fraud_model.py
+├── fraud_api.py
+├── java-bank-app/
 ```
 
 ---
@@ -80,7 +83,21 @@ cd SmartDigitalBankingSystem
 ```bash
 cd backend
 npm install
-# Edit .env and set your MONGO_URI
+# Copy .env.example to .env and update values
+copy .env.example .env
+```
+Open `backend/.env` and set your MongoDB connection string and AI service URL.
+
+Example values:
+```text
+MONGO_URI=mongodb://localhost:27017/smartbankdb
+AI_SERVICE_URL=http://localhost:5001/predict
+FRONTEND_URL=http://localhost:3000
+JWT_SECRET=your_jwt_secret
+```
+
+Then start the backend:
+```bash
 npm run dev
 ```
 Backend runs at: **http://localhost:5000**
@@ -118,8 +135,27 @@ npm run fullstack
 
 The backend will serve the `frontend/build` assets and expose the API at `http://localhost:5000/api`.
 
+### Java Swing Banking App
+A Java Swing banking application has been added in `java-bank-app/`. It connects to MongoDB at `mongodb://localhost:27017` and uses database `bankDB`.
+
+Run the Java app with:
+```bash
+cd java-bank-app
+mvn clean compile exec:java
+```
+
+### Fraud Detection API
+A Python fraud detection service is available at `http://localhost:5001/predict`.
+Start it with:
+```bash
+python -m pip install -r requirements.txt
+python fraud_api.py
+```
+
+The Node backend now sends transaction metadata to the fraud API and stores an AI risk label on each transaction. The transaction list surfaces this label so users can quickly spot low, medium, or high AI risk activity. If the AI service is unavailable, the transaction still completes and will be marked with an `Unknown` risk status.
+
 ### Fullstack Startup Script (Windows)
-A single command can launch backend, frontend, and the Streamlit dashboard together:
+A single command can launch backend, frontend, the Streamlit dashboard, and the fraud API together:
 ```bash
 run-fullstack.bat
 ```
